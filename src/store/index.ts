@@ -32,11 +32,7 @@ const authpersistConfig = {
   storage,
   whitelist: ["accessToken", "users"],
 };
-const whitelistpersistConfig = {
-  key: "wishlist",
-  storage,
-  whitelist: ["itemsId", " productsFullInfo"],
-};
+
 const rootReducer = combineReducers({
   categories,
   products,

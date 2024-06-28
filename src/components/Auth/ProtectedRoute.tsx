@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate} from "react-router-dom";
 import { useAppSelector } from "@store/hooks";
 type TProps = {
   children: React.ReactNode;
