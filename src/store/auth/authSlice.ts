@@ -27,6 +27,10 @@ const authSlice = createSlice({
       state.loading = "idle";
       state.error = null;
     },
+    logout(state) {
+      state.accessToken = null;
+      state.user = null;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(actAuthRegister.pending, function (state) {
@@ -59,6 +63,6 @@ const authSlice = createSlice({
     });
   },
 });
-export const { resetUi } = authSlice.actions;
+export const { resetUi, logout } = authSlice.actions;
 export { actAuthRegister, actAuthLogin };
 export default authSlice.reducer;

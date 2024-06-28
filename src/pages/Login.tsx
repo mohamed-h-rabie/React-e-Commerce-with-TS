@@ -1,43 +1,26 @@
 import { Heading } from "@components/common";
-import { zodResolver } from "@hookform/resolvers/zod";
-
+import { Navigate } from "react-router-dom";
 import { Alert, Col, Row, Spinner } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { signInSchema, signInType } from "@validations/signInSchema";
+
 import { Input } from "@components/Form";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "@store/hooks";
-import { actAuthLogin, resetUi } from "@store/auth/authSlice";
-import { useEffect } from "react";
+import { useLogin } from "@hooks/useLogin";
+
 export default function Login() {
   const {
-    register,
+    accessToken,
+    searchParams,
     handleSubmit,
-    formState: { errors },
-  } = useForm<signInType>({
-    mode: "onBlur",
-    resolver: zodResolver(signInSchema),
-  });
-  const [searchParams, setSearchParams] = useSearchParams();
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { error, loading } = useAppSelector((state) => state.auth);
-  const submitForm: SubmitHandler<signInType> = (data) => {
-    if (searchParams.get("message")) {
-      setSearchParams("");
-    }
-    const { email, password } = data;
-    dispatch(actAuthLogin({ email, password }))
-      .unwrap()
-      .then(() => navigate("/"));
-  };
-  useEffect(() => {
-    return () => {
-      dispatch(resetUi());
-    };
-  }, [dispatch]);
+    submitForm,
+    register,
+    error,
+    loading,
+    formErrors,
+  } = useLogin();
+  if (accessToken) {
+    return <Navigate to="/" />;
+  }
   return (
     <>
       <Heading title="Login" />
@@ -47,13 +30,18 @@ export default function Login() {
             Your account successfully created, please login
           </Alert>
         )}
+        {searchParams.get("message") === "login_required" && (
+          <Alert variant="success">
+            You need to login to view this content
+          </Alert>
+        )}
 
         <Col md={{ span: 6, offset: 3 }}>
           <Form onSubmit={handleSubmit(submitForm)}>
             <Input
               label="Email"
               register={register}
-              error={errors.email?.message}
+              error={formErrors.email?.message}
               name="email"
             />
 
@@ -61,7 +49,7 @@ export default function Login() {
               type="password"
               label="Password"
               register={register}
-              error={errors.password?.message}
+              error={formErrors.password?.message}
               name="password"
             />
 

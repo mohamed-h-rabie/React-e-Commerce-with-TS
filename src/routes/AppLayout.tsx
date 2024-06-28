@@ -15,6 +15,8 @@ const Wishlist = lazy(() => import("@pages/Wishlist"));
 
 import Error from "@pages/Error";
 import PageSuspenseFallback from "@components/feedback/pageSuspenseFullpage/PageSuspenseFullpage";
+import ProtectedRoute from "../components/Auth/ProtectedRoute";
+import Profile from "@pages/Profile";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -96,9 +98,21 @@ const router = createBrowserRouter([
       {
         path: "wishlist",
         element: (
-          <PageSuspenseFallback>
-            <Wishlist />
-          </PageSuspenseFallback>
+          <ProtectedRoute>
+            <PageSuspenseFallback>
+              <Wishlist />
+            </PageSuspenseFallback>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <PageSuspenseFallback>
+              <Profile />
+            </PageSuspenseFallback>
+          </ProtectedRoute>
         ),
       },
     ],

@@ -1,64 +1,27 @@
 import { Heading } from "@components/common";
 import { Input } from "@components/Form";
+import { useRegister } from "@hooks/useRegister";
 import { Col, Row, Spinner } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-////////////////////////////////
-import { signUpSchema, signUpType } from "@validations/signUpSchema";
-import useCheckEmailAvailability from "@hooks/useCheckEmailAvailability";
-////////////////////////////////
-import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-////////////////////////////////
-import { useAppDispatch, useAppSelector } from "@store/hooks";
-import { actAuthRegister, resetUi } from "@store/auth/authSlice";
-import { useEffect } from "react";
+
+import { Navigate } from "react-router-dom";
 
 export default function Register() {
   const {
+    loading,
+    error,
+    accessToken,
     register,
     handleSubmit,
-
-    formState: { errors },
-    getFieldState,
-    trigger,
-  } = useForm<signUpType>({
-    mode: "onBlur",
-    resolver: zodResolver(signUpSchema),
-  });
-  const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.auth);
-  const navigate = useNavigate();
-
-  const {
-    prevEmail,
+    formErrors,
+    submitForm,
+    emailOnBlurHandler,
     emailAvailabilityStatus,
-    checkEmailAvailability,
-    resetCheckEmailAvailability,
-  } = useCheckEmailAvailability();
-  const submitForm: SubmitHandler<signUpType> = async (data) => {
-    const { firstName, lastName, email, password } = data;
-    dispatch(actAuthRegister({ firstName, lastName, email, password }))
-      .unwrap()
-      .then(() => navigate("/login?message=account_created"));
-  };
-  async function emailOnBlurHandler(e: React.FocusEvent<HTMLInputElement>) {
-    await trigger("email");
-    const value = e.target.value;
-    const { isDirty, invalid } = getFieldState("email");
-    if (isDirty && !invalid && prevEmail !== value) {
-      checkEmailAvailability(value);
-    }
-    if (isDirty && invalid && prevEmail) {
-      resetCheckEmailAvailability();
-    }
+  } = useRegister();
+  if (accessToken) {
+    return <Navigate to="/" />;
   }
-  useEffect(() => {
-    return () => {
-      dispatch(resetUi());
-    };
-  }, []);
   return (
     <>
       <Heading title="User Registration" />
@@ -68,20 +31,20 @@ export default function Register() {
             <Input
               label=" firstName"
               register={register}
-              error={errors.firstName?.message}
+              error={formErrors.firstName?.message}
               name="firstName"
             />
 
             <Input
               register={register}
-              error={errors.lastName?.message}
+              error={formErrors.lastName?.message}
               label="last Name"
               name="lastName"
             />
 
             <Input
               register={register}
-              error={errors.email?.message}
+              error={formErrors.email?.message}
               label="email address"
               name="email"
               onBlur={emailOnBlurHandler}
@@ -105,7 +68,7 @@ export default function Register() {
 
             <Input
               register={register}
-              error={errors.password?.message}
+              error={formErrors.password?.message}
               label="password"
               name="password"
               type="password"
@@ -115,7 +78,7 @@ export default function Register() {
               type="password"
               register={register}
               name="confirmPassword"
-              error={errors.confirmPassword?.message}
+              error={formErrors.confirmPassword?.message}
               label="confirm password"
             />
             <Button

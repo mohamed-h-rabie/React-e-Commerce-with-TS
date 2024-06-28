@@ -1,14 +1,25 @@
-import { Badge } from "react-bootstrap";
+import { Badge, NavDropdown } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import styles from "./styles.module.css";
 import { NavLink } from "react-router-dom";
 import HeaderLeftBar from "./HeaderLeftBar/HeaderLeftBar";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { logout } from "@store/auth/authSlice";
+import { useEffect } from "react";
+import { actGetWishlist } from "@store/wishlist/wishlistSlice";
 
 const { headerContainer, headerLogo } = styles;
 
 export default function Header() {
+  const dispatch = useAppDispatch();
+  const { accessToken, user } = useAppSelector((state) => state.auth);
+  useEffect(() => {
+    if (accessToken) {
+      dispatch(actGetWishlist("productIds"));
+    }
+  }, [dispatch, accessToken]);
   return (
     <header>
       <div className={headerContainer}>
@@ -41,12 +52,38 @@ export default function Header() {
               </Nav.Link>
             </Nav>
             <Nav>
-              <Nav.Link as={NavLink} to="Login">
-                Login
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="register">
-                Register
-              </Nav.Link>
+              {!accessToken ? (
+                <>
+                  <Nav.Link as={NavLink} to="Login">
+                    Login
+                  </Nav.Link>
+                  <Nav.Link as={NavLink} to="register">
+                    Register
+                  </Nav.Link>
+                </>
+              ) : (
+                <>
+                  <NavDropdown
+                    title={`Hello ${user?.firstName?.toUpperCase()}`}
+                    id="basic-nav-dropdown"
+                  >
+                    <NavDropdown.Item as={NavLink} to="profile">
+                      Profile
+                    </NavDropdown.Item>
+                    <NavDropdown.Item>Orders</NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item
+                      as={NavLink}
+                      to="/"
+                      onClick={() => {
+                        dispatch(logout());
+                      }}
+                    >
+                      Logout
+                    </NavDropdown.Item>
+                  </NavDropdown>
+                </>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Container>

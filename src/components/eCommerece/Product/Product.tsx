@@ -6,7 +6,7 @@ import { useEffect, useState, memo } from "react";
 import Like from "@assets/svg/like.svg?react";
 import LikeFill from "@assets/svg/like-fill.svg?react";
 import { actLikeToogle } from "@store/wishlist/wishlistSlice";
-import { Button, Spinner } from "react-bootstrap";
+import { Button, Modal, Spinner } from "react-bootstrap";
 
 const { product, productImg, maximumNotice, wishlistBtn } = styles;
 
@@ -18,10 +18,12 @@ export default memo(function Product({
   max,
   quantity,
   isLiked,
+  isAuthenticated,
 }: TProduct) {
   const dispatch = useAppDispatch();
   const [isDisabled, setIsDisabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const currentRemainingQuantity = max - (quantity ?? 0);
   const quantityReachedToMax = currentRemainingQuantity <= 0 ? true : false;
 
@@ -40,50 +42,64 @@ export default memo(function Product({
     setIsDisabled((isDisabled) => !isDisabled);
   }
   function likeToogleHandler() {
-    setIsLoading(true);
-    dispatch(actLikeToogle(id))
-      .unwrap()
-      .then(() => setIsLoading(false))
-      .catch(() => setIsLoading(false));
+    if (isAuthenticated) {
+      setIsLoading(true);
+      dispatch(actLikeToogle(id))
+        .unwrap()
+        .then(() => setIsLoading(false))
+        .catch(() => setIsLoading(false));
+    } else {
+      setShowModal(true);
+    }
   }
 
   return (
-    <div className={product}>
-      <div className={wishlistBtn} onClick={likeToogleHandler}>
-        {isLoading ? (
-          <button disabled={isLoading}>
-            <Spinner animation="border" size="sm" variant="primary" />
-          </button>
-        ) : isLiked ? (
-          <LikeFill />
-        ) : (
-          <Like />
-        )}
+    <>
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Login Required</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          You need to login first to add this item to your wishlist.
+        </Modal.Body>
+      </Modal>
+      <div className={product}>
+        <div className={wishlistBtn} onClick={likeToogleHandler}>
+          {isLoading ? (
+            <button disabled={isLoading}>
+              <Spinner animation="border" size="sm" variant="primary" />
+            </button>
+          ) : isLiked ? (
+            <LikeFill />
+          ) : (
+            <Like />
+          )}
+        </div>
+        <div className={productImg}>
+          <img src={img} alt={title} />
+        </div>
+        <h2>{title}</h2>
+        <h3>{price}EGP</h3>
+        <p className={maximumNotice}>
+          {quantityReachedToMax
+            ? "You reach to the limit"
+            : `You can add ${currentRemainingQuantity} item(s)`}
+        </p>
+        <Button
+          variant="info"
+          style={{ color: "white" }}
+          onClick={handleAddProduct}
+          disabled={isDisabled || quantityReachedToMax}
+        >
+          {isDisabled ? (
+            <>
+              <Spinner animation="border" size="sm" /> Loading...
+            </>
+          ) : (
+            "Add to cart"
+          )}
+        </Button>
       </div>
-      <div className={productImg}>
-        <img src={img} alt={title} />
-      </div>
-      <h2>{title}</h2>
-      <h3>{price}EGP</h3>
-      <p className={maximumNotice}>
-        {quantityReachedToMax
-          ? "You reach to the limit"
-          : `You can add ${currentRemainingQuantity} item(s)`}
-      </p>
-      <Button
-        variant="info"
-        style={{ color: "white" }}
-        onClick={handleAddProduct}
-        disabled={isDisabled || quantityReachedToMax}
-      >
-        {isDisabled ? (
-          <>
-            <Spinner animation="border" size="sm" /> Loading...
-          </>
-        ) : (
-          "Add to cart"
-        )}
-      </Button>
-    </div>
+    </>
   );
 });

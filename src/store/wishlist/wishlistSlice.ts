@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import actLikeToogle from "./act/actLikeToogle";
 import actGetWishlist from "./act/actGetWishlist";
 import { TLoading, TProduct, isString } from "@types";
+import { logout } from "@store/auth/authSlice";
 
 interface IWishlist {
   itemsId: number[];
@@ -23,6 +24,10 @@ const wishlistSlice = createSlice({
     productsFullInfoCleanUp(state) {
       state.productsFullInfo = [];
     },
+    // clenaupWhislist(state) {
+    //   state.productsFullInfo = [];
+    //   state.itemsId = [];
+    // },
   },
 
   extraReducers: (builder) => {
@@ -51,12 +56,20 @@ const wishlistSlice = createSlice({
     });
     builder.addCase(actGetWishlist.fulfilled, function (state, action) {
       state.loading = "succeeded";
-      state.productsFullInfo = action.payload;
+      if (action.payload.dataType === "productsFullInfo") {
+        state.productsFullInfo = action.payload.data as TProduct[];
+      } else if (action.payload.dataType === "productIds") {
+        state.itemsId = action.payload.data as number[];
+      }
     });
     builder.addCase(actGetWishlist.rejected, function (state, action) {
       if (isString(action.payload)) {
         state.error = action.payload;
       }
+    });
+    builder.addCase(logout, (state) => {
+      state.itemsId = [];
+      state.productsFullInfo = [];
     });
   },
 });

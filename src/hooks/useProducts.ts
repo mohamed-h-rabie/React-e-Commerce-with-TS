@@ -13,6 +13,7 @@ function useProducts() {
   const { error, loading, records } = useAppSelector((state) => state.products);
   const cartItems = useAppSelector((state) => state.cart.items);
   const whislistItemsId = useAppSelector((state) => state.wishlist.itemsId);
+  const userAccessToken = useAppSelector((state) => state.auth.accessToken);
   /////////////
 
   ///////////////
@@ -31,6 +32,7 @@ function useProducts() {
     ...el,
     quantity: cartItems[el.id] || 0,
     isLiked: whislistItemsId.includes(el.id),
+    isAuthenticated: userAccessToken ? true : false,
   }));
 
   return { productsParams, error, loading, productFullInfo };
